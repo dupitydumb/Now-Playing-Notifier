@@ -9,19 +9,25 @@
         lastTrackId: null,
 
         init(api) {
-            console.log('[NowPlayingNotifier] Plugin initialized');
+            console.log('[NowPlayingNotifier] Plugin initialized with API:', api);
             this.api = api;
 
             // Check for track changes periodically
             this.checkInterval = setInterval(() => this.checkTrack(), 1000);
         },
 
-        async checkTrack() {
-            if (!this.api?.player?.getCurrentTrack) return;
+        checkTrack() {
+            if (!this.api?.player?.getCurrentTrack) {
+                console.log('[NowPlayingNotifier] No getCurrentTrack API');
+                return;
+            }
 
             try {
-                const track = await this.api.player.getCurrentTrack();
+                // API returns value directly (not a promise)
+                const track = this.api.player.getCurrentTrack();
+
                 if (track && track.id !== this.lastTrackId) {
+                    console.log('[NowPlayingNotifier] Track changed:', track.title);
                     this.lastTrackId = track.id;
                     this.showNotification(track);
                 }
@@ -31,12 +37,17 @@
         },
 
         showNotification(track) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('Now Playing', {
-                    body: `${track.title} - ${track.artist}`,
-                    icon: track.albumArt || '/icon.png',
-                    silent: true
-                });
+            console.log('[NowPlayingNotifier] Showing notification for:', track.title);
+
+            if ('Notification' in window) {
+                if (Notification.permission === 'granted') {
+                    new Notification('Now Playing', {
+                        body: `${track.title || 'Unknown'} - ${track.artist || 'Unknown Artist'}`,
+                        silent: true
+                    });
+                } else {
+                    console.log('[NowPlayingNotifier] Notification permission:', Notification.permission);
+                }
             }
         },
 
@@ -44,7 +55,9 @@
             console.log('[NowPlayingNotifier] Plugin started');
             // Request notification permission
             if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
+                Notification.requestPermission().then(permission => {
+                    console.log('[NowPlayingNotifier] Permission result:', permission);
+                });
             }
         },
 
