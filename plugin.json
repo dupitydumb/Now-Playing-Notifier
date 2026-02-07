@@ -1,13 +1,14 @@
 {
     "name": "Now Playing Notifier",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Audion Team",
     "description": "Shows system notifications when track changes",
     "type": "js",
     "entry": "index.js",
     "permissions": [
         "player:read",
-        "system:notify"
+        "system:notify",
+        "ui:inject"
     ],
     "category": "utility",
     "tags": [
